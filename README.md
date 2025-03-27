@@ -42,7 +42,9 @@ docker run -d \
   -e MYSQL_USER=openSIS_rw \
   -e MYSQL_PASSWORD='Op3nS!S' \
   -p 3306:3306 \
-  -v "./MYSQL/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf" \
+  -v db_data:/var/lib/mysql \
+  -v $(pwd)/mysql-init:/docker-entrypoint-initdb.d \
+  -v $(pwd)/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf \
   mariadb:10.5
 ```
 
