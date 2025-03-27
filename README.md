@@ -23,15 +23,7 @@ docker network create opensis-net
 
 ---
 
-## 🖥 Step 3: Run the openSIS UI Container
-
-```bash
-docker run --name opensis-ui --network opensis-net -p 8080:80 -d opensis-ui
-```
-
----
-
-## 🗄 Step 4: Run the MariaDB Database Container
+## 🗄 Step 3: Run the MariaDB Database Container
 
 ```bash
 docker run -d --name opensis-db \
@@ -47,6 +39,20 @@ docker run -d --name opensis-db \
   --network-alias opensis \
   mariadb:10.5
 ```
+---
+
+## 🖥 Step 4: Run the openSIS UI Container
+
+```bash
+docker run -d --name opensis-ui \
+  -p 8080:80 -p 80:80 \
+  --network opensis_network \
+  --network-alias opensis \
+  --depends-on database \
+  opensis-ui
+
+```
+
 
 ---
 
