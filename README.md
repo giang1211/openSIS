@@ -34,17 +34,17 @@ docker run --name opensis-ui --network opensis-net -p 8080:80 -d opensis-ui
 ## 🗄 Step 4: Run the MariaDB Database Container
 
 ```bash
-docker run -d \
-  --name opensis-db \
-  --network opensis-net \
-  -e MYSQL_ROOT_PASSWORD=root \
+docker run -d --name opensis-db \
+  --restart always \
+  -e MYSQL_ROOT_PASSWORD=abc123 \
   -e MYSQL_DATABASE=openSIS \
   -e MYSQL_USER=openSIS_rw \
-  -e MYSQL_PASSWORD='Op3nS!S' \
-  -p 3306:3306 \
+  -e MYSQL_PASSWORD=Op3nS!S \
   -v db_data:/var/lib/mysql \
-  -v $(pwd)/mysql-init:/docker-entrypoint-initdb.d \
-  -v $(pwd)/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf \
+  -v $(pwd)/openSIS-Classis/MYSQL/mysql-init:/docker-entrypoint-initdb.d \
+  -v $(pwd)/openSIS-Classis/MYSQL/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf \
+  --network opensis_network \
+  --network-alias opensis \
   mariadb:10.5
 ```
 
