@@ -1,86 +1,124 @@
 # 🚀 Deploying openSIS with Docker
 
 
+## 🌐 Step 1: Create a Docker Network
+
+To allow containers to communicate securely, create a custom Docker network:
+
+```bash
+docker network create opensis_network
+```
+
 ---
 
-## 🧱 Step 1: Build the openSIS UI Docker Image
+## 🔐 Step 2: Create an `.env` File
 
-Make sure you're in the directory containing the `Dockerfile` for the openSIS UI:
+Create a `.env` file in the same directory as your `Dockerfile` to store environment variables securely:
+
+```bash
+touch .env
+```
+
+Add the following content:
+
+```
+# Database credentials
+MYSQL_ROOT_PASSWORD=your-root-password
+MYSQL_DATABASE=openSIS
+MYSQL_USER=openSIS_rw
+MYSQL_PASSWORD=Op3nS!S
+```
+
+---
+
+## 🗄️ Step 3: Create Docker Volumes
+
+To persist the database data, create a named volume:
+
+```bash
+docker volume create db_data
+```
+
+---
+
+## 🧱 Step 4: Build the openSIS UI Docker Image
+
+Run the following command to build the Docker image:
 
 ```bash
 docker build -t opensis-ui .
 ```
 
----
-
-## 🌐 Step 2: Create a Docker Network
-
-Create a custom Docker network so the containers can communicate:
-
-```bash
-docker network create opensis-net
-```
 
 ---
 
-## 🗄 Step 3: Run the MariaDB Database Container
+## 🗄️ Step 5: Run the MariaDB Container
+
+Run the MariaDB container and load the environment variables from the `.env` file:
 
 ```bash
 docker run -d --name opensis-db \
   --restart always \
-  -e MYSQL_ROOT_PASSWORD=abc123 \
-  -e MYSQL_DATABASE=openSIS \
-  -e MYSQL_USER=openSIS_rw \
-  -e MYSQL_PASSWORD=Op3nS!S \
+  --env-file .env \
   -v db_data:/var/lib/mysql \
-  -v $(pwd)/openSIS-Classis/MYSQL/mysql-init:/docker-entrypoint-initdb.d \
-  -v $(pwd)/openSIS-Classis/MYSQL/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf \
+  -v $(pwd)/openSIS-Classic/MYSQL/mysql-init:/docker-entrypoint-initdb.d \
+  -v $(pwd)/openSIS-Classic/MYSQL/mysql-config/strict_mode.cnf:/etc/mysql/conf.d/strict_mode.cnf \
   --network opensis_network \
   --network-alias opensis \
   mariadb:10.5
 ```
+
 ---
 
-## 🖥 Step 4: Run the openSIS UI Container
+## 🎨 Step 6: Run the openSIS UI Container
+
+Run the openSIS UI container on the same network:
 
 ```bash
 docker run -d --name opensis-ui \
-  -p 8080:80 -p 80:80 \
   --network opensis_network \
-  --network-alias opensis \
-  --depends-on database \
+  -p 8080:80 \
   opensis-ui
-
 ```
-
 
 ---
 
-## 🛠 Step 5: Configure the MariaDB Database
+## 🧪 Step 7: Test the openSIS Application
 
-Access the MariaDB shell:
+Once both containers are running:
+- Open your browser and go to:
+```
+http://localhost:8080
+```
+- Follow the installation steps in the openSIS UI.
+- Connect to the database using:
+    - **Host:** `opensis`
+    - **Database:** `openSIS`
+    - **User:** `openSIS_rw`
+    - **Password:** `Op3nS!S`
+
+---
+
+## 🧼 Step 8: Cleanup (Optional)
+
+To stop and remove the containers:
 
 ```bash
-docker exec -it opensis-db mariadb -u root -p
+docker stop opensis-ui opensis-db
+docker rm opensis-ui opensis-db
 ```
 
-Enter the password (`root`), then run:
+To remove the Docker network:
 
-```sql
-CREATE DATABASE openSIS DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON *.* TO 'openSIS_rw'@'%' IDENTIFIED BY 'Op3nS!S' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
+```bash
+docker network rm opensis_network
 ```
 
----
+To remove the volumes:
 
-## ✅ Step 6: Access the openSIS Installation Page
-
-Open your browser and go to:
-
-```
-http://localhost:8080/openSIS
+```bash
+docker volume rm db_data
 ```
 
----
+-----
 
